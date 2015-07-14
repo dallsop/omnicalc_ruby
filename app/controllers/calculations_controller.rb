@@ -1,89 +1,104 @@
 class CalculationsController < ApplicationController
 
+  ######################
+  ##### WORD COUNT #####
+  ######################
+
   def word_count
     @text = params[:user_text]
     @special_word = params[:user_word]
 
-    # ================================================================================
-    # Your code goes below.
-    # The text the user input is in the string @text.
-    # The special word the user input is in the string @special_word.
-    # ================================================================================
+    @character_count_with_spaces = @text.length
 
+    @character_count_without_spaces = @text.gsub(' ','').length
 
-    @character_count_with_spaces = "Replace this string with your answer."
+    @word_count = @text.split.length
 
-    @character_count_without_spaces = "Replace this string with your answer."
+    @occurrences = @text.upcase.split.count(@special_word.upcase)
 
-    @word_count = "Replace this string with your answer."
-
-    @occurrences = "Replace this string with your answer."
   end
+
+  ########################
+  ##### LOAN PAYMENT #####
+  ########################
 
   def loan_payment
     @apr = params[:annual_percentage_rate].to_f
     @years = params[:number_of_years].to_i
     @principal = params[:principal_value].to_f
 
-    # ================================================================================
-    # Your code goes below.
-    # The annual percentage rate the user input is in the decimal @apr.
-    # The number of years the user input is in the integer @years.
-    # The principal value the user input is in the decimal @principal.
-    # ================================================================================
+    @monthly_payment = (@apr / 1200 * @principal) / (1 - (1 + @apr / 1200) ** -(@years * 12))
 
-    @monthly_payment = "Replace this string with your answer."
   end
+
+  ########################
+  ##### TIME BETWEEN #####
+  ########################
 
   def time_between
     @starting = Chronic.parse(params[:starting_time])
     @ending = Chronic.parse(params[:ending_time])
 
-    # ================================================================================
-    # Your code goes below.
-    # The start time is in the Time @starting.
-    # The end time is in the Time @ending.
-    # Note: Ruby stores Times in terms of seconds since Jan 1, 1970.
-    #   So if you subtract one time from another, you will get an integer
-    #   number of seconds as a result.
-    # ================================================================================
+    difference = @ending - @starting
 
-    @seconds = "Replace this string with your answer."
-    @minutes = "Replace this string with your answer."
-    @hours = "Replace this string with your answer."
-    @days = "Replace this string with your answer."
-    @weeks = "Replace this string with your answer."
-    @years = "Replace this string with your answer."
+    @seconds = difference
+    @minutes = difference / 60
+    @hours = difference / 3600      #60 * 60
+    @days = difference / 86400      #60 * 60 * 24
+    @weeks = difference / 604800    #60 * 60 * 24 * 7
+    @years = difference / 31557600  #60 * 60 * 24 * 365.25
+
   end
+
+  #############################
+  ##### DESCRIPTIVE STATS #####
+  #############################
 
   def descriptive_statistics
     @numbers = params[:list_of_numbers].gsub(',', '').split.map(&:to_f)
 
-    # ================================================================================
-    # Your code goes below.
-    # The numbers the user input are in the array @numbers.
-    # ================================================================================
+    @sorted_numbers = @numbers.sort
 
-    @sorted_numbers = "Replace this string with your answer."
+    @count = @numbers.count
 
-    @count = "Replace this string with your answer."
+    @minimum = @numbers.min
 
-    @minimum = "Replace this string with your answer."
+    @maximum = @numbers.max
 
-    @maximum = "Replace this string with your answer."
+    @range = @maximum - @minimum
 
-    @range = "Replace this string with your answer."
+    if @count % 2 == 1 #odd
+      @median = @sorted_numbers[@count / 2]
+    else #even
+      @median = (@sorted_numbers[@count / 2 - 1] + @sorted_numbers[@count / 2]) / 2
+    end
 
-    @median = "Replace this string with your answer."
+    @sum = @numbers.sum
 
-    @sum = "Replace this string with your answer."
+    @mean = @sum / @count
 
-    @mean = "Replace this string with your answer."
+    #----VARIANCE----#
+    #loop through all values, sum squared differences, divide by count
+    @variance = 0
+    @sorted_numbers.each do|nums|
+      @variance += (nums - @mean) ** 2
+    end
+    @variance = @variance / @count
 
-    @variance = "Replace this string with your answer."
+    @standard_deviation = @variance ** 0.5
 
-    @standard_deviation = "Replace this string with your answer."
-
-    @mode = "Replace this string with your answer."
+    #----MODE----#
+    #loop through sorted values, create hash of unique keys with number counts as values, return key with max value
+    #unless only one value, then mode = value
+    #(separate from variance loop above for clarity)
+    if @numbers.count == 1
+      @mode = @numbers[0]
+    else
+      counts = Hash.new(0)
+      @sorted_numbers.each do|nums|
+        counts[nums] += 1
+      end
+      @mode = counts.key(counts.values.max)
+    end
   end
 end
